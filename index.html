@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pancasila Quest: Petualangan Kesatria Pancasila</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f8fafc;
+            min-height: 100vh;
+            user-select: none;
+        }
+        .font-game {
+            font-family: 'Fredoka', cursive;
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+        .btn-bounce:hover {
+            transform: translateY(-3px) scale(1.02);
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .btn-bounce:active {
+            transform: translateY(1px) scale(0.98);
+        }
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 15px rgba(234, 179, 8, 0.4); }
+            50% { box-shadow: 0 0 30px rgba(234, 179, 8, 0.8); }
+        }
+        .glow-gold {
+            animation: pulseGlow 2s infinite;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #1e293b;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center p-3 sm:p-6 min-h-screen">
+
+    <!-- Game Container -->
+    <div class="w-full max-w-4xl min-h-[620px] glass-card rounded-3xl p-4 sm:p-8 shadow-2xl relative overflow-hidden flex flex-col justify-between">
+        
+        <!-- Top HUD Bar (Always visible except start screen) -->
+        <header id="hud-bar" class="hidden flex-wrap items-center justify-between bg-slate-900/80 p-3 sm:p-4 rounded-2xl border border-slate-700/60 mb-4 gap-2">
+            <div class="flex items-center gap-3">
+                <div id="hud-avatar" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-amber-500 flex items-center justify-center text-xl sm:text-2xl shadow-md border-2 border-amber-300">
+                    👨‍🎓
+                </div>
+                <div>
+                    <h3 id="hud-name" class="font-bold text-sm sm:text-base text-amber-400">Kesatria Pancasila</h3>
+                    <p class="text-xs text-slate-400 flex items-center gap-1">
+                        <i class="fa-solid fa-trophy text-amber-400"></i> Skor: <span id="hud-score" class="font-bold text-white">0</span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Progress Badges -->
+            <div class="flex items-center gap-1 sm:gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
+                <span id="badge-s1" title="Sila 1: Ketuhanan" class="opacity-30 grayscale text-xl sm:text-2xl transition-all">⭐</span>
+                <span id="badge-s2" title="Sila 2: Kemanusiaan" class="opacity-30 grayscale text-xl sm:text-2xl transition-all">⛓️</span>
+                <span id="badge-s3" title="Sila 3: Persatuan" class="opacity-30 grayscale text-xl sm:text-2xl transition-all">🌳</span>
+                <span id="badge-s4" title="Sila 4: Kerakyatan" class="opacity-30 grayscale text-xl sm:text-2xl transition-all">🐂</span>
+                <span id="badge-s5" title="Sila 5: Keadilan" class="opacity-30 grayscale text-xl sm:text-2xl transition-all">🌾</span>
+            </div>
+
+            <!-- Sound & Home Control -->
+            <div class="flex items-center gap-2">
+                <button id="btn-sound" onclick="toggleSound()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition">
+                    <i class="fa-solid fa-volume-high" id="sound-icon"></i>
+                </button>
+                <button onclick="confirmGoMap()" class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 transition" title="Peta Misi">
+                    <i class="fa-solid fa-map"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- SCREEN 1: START & AVATAR SELECTION -->
+        <section id="screen-start" class="flex flex-col items-center justify-center text-center py-6 my-auto">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-semibold text-xs sm:text-sm mb-4">
+                🇮🇩 Pendidikan Pancasila • Kelas 6 SD
+            </div>
+            
+            <h1 class="font-game text-3xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 tracking-wide mb-3 drop-shadow">
+                PANCASILA QUEST
+            </h1>
+            <p class="text-slate-300 max-w-lg text-sm sm:text-base mb-6">
+                Selesaikan 5 Misi Pengamalan Pancasila dalam kehidupan sehari-hari dan dapatkan gelar <strong>Kesatria Pancasila Utama</strong>!
+            </p>
+
+            <!-- Name Input & Avatar Picker -->
+            <div class="w-full max-w-md bg-slate-800/80 p-5 rounded-2xl border border-slate-700/80 mb-6 text-left space-y-4 shadow-lg">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Nama Kesatria:</label>
+                    <input type="text" id="player-name-input" placeholder="Masukkan namamu..." value="Bintang" 
+                           class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 transition">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Pilih Karakter:</label>
+                    <div class="flex justify-around gap-2">
+                        <button onclick="selectAvatar('👨‍🎓')" class="avatar-btn w-14 h-14 text-2xl rounded-2xl bg-slate-700/60 border-2 border-transparent hover:border-amber-400 transition flex items-center justify-center active">👨‍🎓</button>
+                        <button onclick="selectAvatar('👩‍🎓')" class="avatar-btn w-14 h-14 text-2xl rounded-2xl bg-slate-700/60 border-2 border-transparent hover:border-amber-400 transition flex items-center justify-center">👩‍🎓</button>
+                        <button onclick="selectAvatar('🧑‍🦱')" class="avatar-btn w-14 h-14 text-2xl rounded-2xl bg-slate-700/60 border-2 border-transparent hover:border-amber-400 transition flex items-center justify-center">🧑‍🦱</button>
+                        <button onclick="selectAvatar('👧')" class="avatar-btn w-14 h-14 text-2xl rounded-2xl bg-slate-700/60 border-2 border-transparent hover:border-amber-400 transition flex items-center justify-center">👧</button>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="startGame()" class="btn-bounce font-game text-xl px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-2xl shadow-xl glow-gold flex items-center gap-3">
+                <i class="fa-solid fa-play"></i> MULAI PETUALANGAN
+            </button>
+        </section>
+
+        <!-- SCREEN 2: WORLD MAP / ZONES -->
+        <section id="screen-map" class="hidden flex-col items-center justify-center my-auto py-4">
+            <div class="text-center mb-6">
+                <h2 class="font-game text-2xl sm:text-3xl text-amber-400">Peta Misi Pengamalan Pancasila</h2>
+                <p class="text-slate-300 text-xs sm:text-sm">Pilih zona misi untuk menguji pengamalan Pancasilamu!</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl">
+                <!-- Zone 1 -->
+                <button onclick="startLevel(1)" id="zone-btn-1" class="btn-bounce bg-slate-800/90 border-2 border-amber-500/80 p-4 rounded-2xl text-left flex items-start gap-4 relative overflow-hidden group">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-2xl shrink-0">⭐</div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Sila Ke-1</span>
+                        <h4 class="font-bold text-white text-base">Taman Toleransi</h4>
+                        <p class="text-xs text-slate-400 mt-1">Sikap Ketuhanan & Toleransi beragama.</p>
+                    </div>
+                    <span id="zone-status-1" class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-semibold">Siap</span>
+                </button>
+
+                <!-- Zone 2 -->
+                <button onclick="startLevel(2)" id="zone-btn-2" class="btn-bounce bg-slate-800/90 border-2 border-slate-700 p-4 rounded-2xl text-left flex items-start gap-4 relative overflow-hidden group opacity-60">
+                    <div class="w-12 h-12 rounded-xl bg-slate-700 flex items-center justify-center text-2xl shrink-0">⛓️</div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sila Ke-2</span>
+                        <h4 class="font-bold text-white text-base">Lorong Kepedulian</h4>
+                        <p class="text-xs text-slate-400 mt-1">Sikap Kemanusiaan & Tenggang rasa.</p>
+                    </div>
+                    <span id="zone-status-2" class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-slate-700 text-slate-400 font-semibold"><i class="fa-solid fa-lock"></i> Terkunci</span>
+                </button>
+
+                <!-- Zone 3 -->
+                <button onclick="startLevel(3)" id="zone-btn-3" class="btn-bounce bg-slate-800/90 border-2 border-slate-700 p-4 rounded-2xl text-left flex items-start gap-4 relative overflow-hidden group opacity-60">
+                    <div class="w-12 h-12 rounded-xl bg-slate-700 flex items-center justify-center text-2xl shrink-0">🌳</div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sila Ke-3</span>
+                        <h4 class="font-bold text-white text-base">Jembatan Kebhinnekaan</h4>
+                        <p class="text-xs text-slate-400 mt-1">Cinta tanah air & Menjaga persatuan.</p>
+                    </div>
+                    <span id="zone-status-3" class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-slate-700 text-slate-400 font-semibold"><i class="fa-solid fa-lock"></i> Terkunci</span>
+                </button>
+
+                <!-- Zone 4 -->
+                <button onclick="startLevel(4)" id="zone-btn-4" class="btn-bounce bg-slate-800/90 border-2 border-slate-700 p-4 rounded-2xl text-left flex items-start gap-4 relative overflow-hidden group opacity-60">
+                    <div class="w-12 h-12 rounded-xl bg-slate-700 flex items-center justify-center text-2xl shrink-0">🐂</div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sila Ke-4</span>
+                        <h4 class="font-bold text-white text-base">Ruang Musyawarah</h4>
+                        <p class="text-xs text-slate-400 mt-1">Mengutamakan diskusi & keputusan bersama.</p>
+                    </div>
+                    <span id="zone-status-4" class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-slate-700 text-slate-400 font-semibold"><i class="fa-solid fa-lock"></i> Terkunci</span>
+                </button>
+
+                <!-- Zone 5 -->
+                <button onclick="startLevel(5)" id="zone-btn-5" class="btn-bounce bg-slate-800/90 border-2 border-slate-700 p-4 rounded-2xl text-left flex items-start gap-4 relative overflow-hidden group opacity-60">
+                    <div class="w-12 h-12 rounded-xl bg-slate-700 flex items-center justify-center text-2xl shrink-0">🌾</div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Sila Ke-5</span>
+                        <h4 class="font-bold text-white text-base">Pasar Keadilan</h4>
+                        <p class="text-xs text-slate-400 mt-1">Sikap adil, hemat, & gotong royong.</p>
+                    </div>
+                    <span id="zone-status-5" class="absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-slate-700 text-slate-400 font-semibold"><i class="fa-solid fa-lock"></i> Terkunci</span>
+                </button>
+
+                <!-- Summary / Certificate Button -->
+                <button onclick="showFinalCertificate()" id="btn-cert-map" disabled class="bg-gradient-to-br from-amber-600/30 to-amber-800/30 border-2 border-amber-500/40 p-4 rounded-2xl text-left flex items-center gap-4 relative overflow-hidden opacity-50 cursor-not-allowed">
+                    <div class="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center text-2xl shrink-0 text-amber-400"><i class="fa-solid fa-award"></i></div>
+                    <div>
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Pencapaian Akhir</span>
+                        <h4 class="font-bold text-amber-200 text-base">Rapor & Sertifikat</h4>
+                        <p class="text-xs text-slate-400">Selesaikan semua 5 Sila!</p>
+                    </div>
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: GAMEPLAY ARENA -->
+        <section id="screen-gameplay" class="hidden flex-col justify-between flex-1 py-2">
+            <!-- Mission Header Info -->
+            <div class="flex items-center justify-between border-b border-slate-700/80 pb-3 mb-4">
+                <div class="flex items-center gap-3">
+                    <span id="level-badge-icon" class="text-3xl">⭐</span>
+                    <div>
+                        <span id="level-sila-label" class="text-xs font-bold uppercase tracking-widest text-amber-400">Sila 1</span>
+                        <h2 id="level-title" class="font-game text-xl sm:text-2xl text-white">Taman Toleransi</h2>
+                    </div>
+                </div>
+                <div class="bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 text-xs text-slate-300 font-semibold">
+                    Tantangan <span id="question-index">1</span> dari <span id="question-total">3</span>
+                </div>
+            </div>
+
+            <!-- Main Interactive Challenge Area -->
+            <div id="challenge-container" class="flex-1 flex flex-col justify-center">
+                <!-- Dynamic Content Rendered Here (Scenario, Simulation, Quiz Options) -->
+            </div>
+
+            <!-- Feedback / Explanation Box -->
+            <div id="explanation-box" class="hidden mt-4 p-4 rounded-2xl bg-slate-800 border-2 border-amber-500/60 animate-fade-in">
+                <div class="flex items-start gap-3">
+                    <div id="explanation-icon" class="text-2xl shrink-0">💡</div>
+                    <div>
+                        <h4 id="explanation-title" class="font-bold text-amber-400 text-sm sm:text-base">Penjelasan Pancasila:</h4>
+                        <p id="explanation-text" class="text-xs sm:text-sm text-slate-200 mt-1 leading-relaxed">---</p>
+                    </div>
+                </div>
+                <div class="mt-3 text-right">
+                    <button onclick="nextQuestion()" class="btn-bounce font-game px-5 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl text-sm inline-flex items-center gap-2">
+                        Lanjut <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: LEVEL VICTORY SCREEN -->
+        <section id="screen-victory" class="hidden flex-col items-center justify-center text-center py-6 my-auto">
+            <div class="w-20 h-20 rounded-full bg-amber-500/20 border-4 border-amber-400 flex items-center justify-center text-5xl mb-4 animate-bounce">
+                🎉
+            </div>
+            <h2 class="font-game text-3xl text-amber-400 mb-1">Misi Selesai!</h2>
+            <p id="victory-subtitle" class="text-slate-300 text-sm mb-6">Kamu berhasil mengamalkan Sila ini dengan sangat baik!</p>
+
+            <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-2xl max-w-md w-full mb-6 space-y-3">
+                <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-2">
+                    <span class="text-slate-400">Lencana Diperoleh:</span>
+                    <span id="victory-badge-name" class="font-bold text-amber-300 text-base">⭐ Lencana Bintang</span>
+                </div>
+                <div class="flex justify-between items-center text-sm border-b border-slate-700 pb-2">
+                    <span class="text-slate-400">Bonus Skor Misi:</span>
+                    <span id="victory-added-score" class="font-bold text-green-400">+100 Poin</span>
+                </div>
+                <div class="flex justify-between items-center text-sm">
+                    <span class="text-slate-400">Total Skor Saat Ini:</span>
+                    <span id="victory-total-score" class="font-bold text-amber-400 text-lg">100</span>
+                </div>
+            </div>
+
+            <button onclick="goMapScreen()" class="btn-bounce font-game px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl text-lg shadow-lg flex items-center gap-2">
+                <i class="fa-solid fa-map-marked-alt"></i> Kembali Ke Peta Misi
+            </button>
+        </section>
+
+        <!-- SCREEN 5: FINAL RAPOR & CERTIFICATE -->
+        <section id="screen-certificate" class="hidden flex-col items-center text-center my-auto py-4 overflow-y-auto max-h-[85vh]">
+            <div class="w-full bg-gradient-to-b from-slate-900 to-slate-800 p-6 sm:p-8 rounded-3xl border-4 border-amber-400 shadow-2xl relative mb-6">
+                <!-- Certificate Header -->
+                <div class="flex justify-between items-center border-b-2 border-amber-500/40 pb-4 mb-4">
+                    <div class="text-left">
+                        <span class="text-[10px] font-bold uppercase tracking-widest text-amber-400">Republik Indonesia • SD Kelas 6</span>
+                        <h2 class="font-game text-xl sm:text-2xl text-white">RAPOR KESATRIA PANCASILA</h2>
+                    </div>
+                    <div class="text-3xl sm:text-4xl">🇮🇩</div>
+                </div>
+
+                <p class="text-xs sm:text-sm text-slate-300">Sertifikat Penghargaan Diberikan Kepada:</p>
+                <h3 id="cert-player-name" class="font-game text-2xl sm:text-3xl text-amber-300 my-2 underline decoration-amber-500 decoration-2">Nama Siswa</h3>
+                <p class="text-xs text-slate-300 max-w-md mx-auto mb-6">
+                    Telah menyelesaikan seluruh misi pengamalan Pancasila Sila 1 hingga Sila 5 dalam kehidupan sehari-hari dengan predikat:
+                </p>
+
+                <!-- Predikat Badge -->
+                <div class="inline-block bg-amber-500/20 border-2 border-amber-400 px-6 py-2 rounded-2xl mb-6">
+                    <span id="cert-title" class="font-bold text-amber-300 text-base sm:text-lg">KESATRIA PANCASILA UTAMA</span>
+                </div>
+
+                <!-- Score Grid -->
+                <div class="grid grid-cols-2 gap-3 max-w-sm mx-auto text-left bg-slate-900/80 p-4 rounded-xl border border-slate-700 mb-6 text-xs sm:text-sm">
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">TOTAL SKOR:</span>
+                        <span id="cert-score" class="font-bold text-amber-400 text-lg">500 / 500</span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 block text-[10px]">LENCANA LENGKAP:</span>
+                        <span class="text-amber-300 font-bold text-base">5 / 5 Lencana</span>
+                    </div>
+                </div>
+
+                <!-- Unlocked Badges Row -->
+                <div class="flex justify-center items-center gap-3 sm:gap-4 text-2xl sm:text-3xl bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                    <span title="Sila 1">⭐</span>
+                    <span title="Sila 2">⛓️</span>
+                    <span title="Sila 3">🌳</span>
+                    <span title="Sila 4">🐂</span>
+                    <span title="Sila 5">🌾</span>
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="resetGame()" class="btn-bounce font-game px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-2xl text-sm border border-slate-600 flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Main Lagi
+                </button>
+                <button onclick="window.print()" class="btn-bounce font-game px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-2xl text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Cetak / Simpan Rapor
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        /* SOUND SYNTHESIZER (Web Audio API) */
+        let soundEnabled = true;
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        let audioCtx = null;
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                if (!audioCtx) audioCtx = new AudioCtx();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                const now = audioCtx.currentTime;
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.08);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.08);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'correct') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(523.25, now); // C5
+                    osc.frequency.setValueAtTime(659.25, now + 0.1); // E5
+                    osc.frequency.setValueAtTime(783.99, now + 0.2); // G5
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                    osc.start(now);
+                    osc.stop(now + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, now); // A3
+                    osc.frequency.setValueAtTime(180, now + 0.12);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                } else if (type === 'victory') {
+                    const freqs = [523.25, 659.25, 783.99, 1046.50];
+                    freqs.forEach((f, idx) => {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g);
+                        g.connect(audioCtx.destination);
+                        o.type = 'sine';
+                        o.frequency.setValueAtTime(f, now + idx * 0.1);
+                        g.gain.setValueAtTime(0.2, now + idx * 0.1);
+                        g.gain.linearRampToValueAtTime(0.01, now + idx * 0.1 + 0.25);
+                        o.start(now + idx * 0.1);
+                        o.stop(now + idx * 0.1 + 0.25);
+                    });
+                }
+            } catch (e) {
+                console.log("Audio not supported or blocked", e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high';
+                playSound('click');
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark';
+            }
+        }
+
+        /* GAME STATE VARIABLES */
+        let gameState = {
+            playerName: "Bintang",
+            avatar: "👨‍🎓",
+            score: 0,
+            currentLevel: 1,
+            currentQuestionIdx: 0,
+            completedLevels: [false, false, false, false, false],
+            levelScores: [0, 0, 0, 0, 0]
+        };
+
+        /* LEVEL DATASETS FOR SILA 1 - SILA 5 (Pendidikan Pancasila Kelas 6 SD) */
+        const levelData = {
+            1: {
+                sila: "Sila Ke-1",
+                title: "Taman Toleransi",
+                icon: "⭐",
+                badgeName: "⭐ Lencana Bintang",
+                description: "Nilai Ketuhanan Yang Maha Esa, Toleransi, & Kebebasan Beribadah",
+                questions: [
+                    {
+                        type: "scenario",
+                        situation: "Saat jam istirahat sekolah, kamu ingin berolah raga bersama kawan-kawan. Namun, Made yang beragama Hindu meminta izin sebentar untuk beribadah di Pure dekat sekolah.",
+                        options: [
+                            { text: "Mengizinkan Made beribadah dan menghentikan main sebentar untuk menunggunya dengan sopan.", correct: true },
+                            { text: "Memaksa Made untuk tetap bermain dan menunda ibadahnya.", correct: false },
+                            { text: "Mengejek Made karena ibadahnya berbeda dengan kawan lain.", correct: false }
+                        ],
+                        explanation: "Sila Ke-1 mengajarkan kita untuk menghormati kebebasan orang lain dalam menjalankan ibadah sesuai agamanya masing-masing tanpa gangguan."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Tetanggamu sedang merayakan hari raya keagamaan mereka. Apa tindakanmu sebagai pengamalan Sila ke-1?",
+                        options: [
+                            { text: "Mengencangkan suara musik agar mengganggu perayaan mereka.", correct: false },
+                            { text: "Menjaga ketenangan lingkungan dan mengucapkan selamat dengan penuh keramahan.", correct: true },
+                            { text: "Pura-pura tidak tahu dan acuh tak acuh.", correct: false }
+                        ],
+                        explanation: "Menjaga kerukunan antarumat beragama di lingkungan rumah adalah bukti nyata pengamalan Sila Ketuhanan Yang Maha Esa."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Di kelas 6 SD, terdapat teman yang berasal dari latar belakang agama berbeda. Ketika berdoa sebelum belajar, sikap yang benar adalah...",
+                        options: [
+                            { text: "Berdoa sesuai dengan agama dan kepercayaan masing-masing dengan khusyuk.", correct: true },
+                            { text: "Memaksa semua teman berdoa dengan cara agama mayoritas.", correct: false },
+                            { text: "Bercanda dan mengobrol saat teman lain sedang berdoa.", correct: false }
+                        ],
+                        explanation: "Menghormati tata cara berdoa agama lain adalah wujud toleransi beragama yang sesuai dengan Sila Pertama Pancasila."
+                    }
+                ]
+            },
+            2: {
+                sila: "Sila Ke-2",
+                title: "Lorong Kepedulian",
+                icon: "⛓️",
+                badgeName: "⛓️ Lencana Rantai",
+                description: "Kemanusiaan yang Adil dan Beradab, Empati, & Sikap Tenggang Rasa",
+                questions: [
+                    {
+                        type: "scenario",
+                        situation: "Seorang teman kelasmu jatuh dari sepeda hingga kakinya terluka saat pulang sekolah. Apa tindakan beradab yang sebaiknya kamu lakukan?",
+                        options: [
+                            { text: "Merekam kejadian itu untuk diunggah ke media sosial.", correct: false },
+                            { text: "Segera menolongnya, mengobati lukanya ke UKS/Rumah, dan menenanginya.", correct: true },
+                            { text: "Mentertawakannya karena dia tidak berhati-hati.", correct: false }
+                        ],
+                        explanation: "Sila Ke-2 menekankan rasa kemanusiaan, empati, dan kewajiban menolong sesama tanpa membeda-bedakan."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Di sekolah, kamu melihat ada teman yang sering diejek dan dirundung (bully) karena fisiknya. Tindakanmu adalah...",
+                        options: [
+                            { text: "Membela teman yang diejek dan melaporkan tindakan rundungan tersebut kepada guru.", correct: true },
+                            { text: "Ikut mengejek bersama teman-teman yang lain.", correct: false },
+                            { text: "Diam saja agar tidak dimusuhi pelaku rundungan.", correct: false }
+                        ],
+                        explanation: "Menolak segala bentuk perundungan (bullying) dan memperlakukan setiap orang dengan bermartabat merupakan amanat Sila ke-2."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Daerah tetangga mengalami musibah bencana alam banjir. Sebagai siswa kelas 6, bentuk pengamalan Sila ke-2 yang tepat adalah...",
+                        options: [
+                            { text: "Menyisihkan sebagian uang saku atau baju layak pakai untuk disumbangkan.", correct: true },
+                            { text: "Menonton berita bencana tanpa rasa peduli.", correct: false },
+                            { text: "Mengritik korban bencana di media sosial.", correct: false }
+                        ],
+                        explanation: "Gemar melakukan kegiatan kemanusiaan dan membantu korban bencana adalah perwujudan Sila Kemanusiaan yang Adil dan Beradab."
+                    }
+                ]
+            },
+            3: {
+                sila: "Sila Ke-3",
+                title: "Jembatan Kebhinnekaan",
+                icon: "🌳",
+                badgeName: "🌳 Lencana Pohon Beringin",
+                description: "Persatuan Indonesia, Cinta Produk Lokal, & Menjaga Kerukunan",
+                questions: [
+                    {
+                        type: "scenario",
+                        situation: "Dalam tugas kelompok kesenian, anggota kelompokmu berasal dari suku Jawa, Sunda, Batak, dan Papua. Bagaimana sebaiknya kalian bekerja sama?",
+                        options: [
+                            { text: "Hanya mau berkomunikasi dengan teman yang sesuku saja.", correct: false },
+                            { text: "Saling bekerja sama dengan rukun, bangga akan keanekaragaman, dan saling melengkapi.", correct: true },
+                            { text: "Membagi kelompok ulang berdasarkan asal suku.", correct: false }
+                        ],
+                        explanation: "Sila Ke-3 menjunjung tinggi semangat 'Bhinneka Tunggal Ika' (Berbeda-beda tetapi tetap satu jua)."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Ibu mengajakmu berbelanja sepatu sekolah. Di toko terdapat sepatu buatan dalam negeri dan sepatu impor luar negeri. Wujud cinta tanah air adalah...",
+                        options: [
+                            { text: "Membeli produk buatan dalam negeri yang berkualitas untuk mendukung UMKM Indonesia.", correct: true },
+                            { text: "Selalu membeli barang luar negeri karena menganggap barang lokal jelek.", correct: false },
+                            { text: "Mengejek barang-barang buatan perajin lokal.", correct: false }
+                        ],
+                        explanation: "Bangga menggunakan produk-produk buatan dalam negeri adalah salah satu cara nyata mengamalkan Sila Ke-3."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Ketika beredar berita atau rumor hoaks di grup percakapan yang dapat memecah belah persahabatan di sekolah, tindakan terbaikmu adalah...",
+                        options: [
+                            { text: "Langsung menyebarkan berita itu tanpa menyaring kebenarannya.", correct: false },
+                            { text: "Memeriksa kebenaran informasi terlebih dahulu dan tidak menyebarkan kabar yang merusak persatuan.", correct: true },
+                            { text: "Protokol provokasi agar teman-teman saling bertengkar.", correct: false }
+                        ],
+                        explanation: "Menjaga ketertiban, kedamaian, dan tidak menyebarkan fitnah/hoaks adalah pengamalan Sila Persatuan Indonesia."
+                    }
+                ]
+            },
+            4: {
+                sila: "Sila Ke-4",
+                title: "Ruang Musyawarah",
+                icon: "🐂",
+                badgeName: "🐂 Lencana Kepala Banteng",
+                description: "Kerakyatan & Musyawarah Mufakat, Menghargai Pendapat, & Menghormati Keputusan",
+                questions: [
+                    {
+                        type: "scenario",
+                        situation: "Kelas 6 sedang mengadakan pemilihan Ketua Kelas. Usulanmu berbeda dengan pendapat mayoritas teman-teman. Sikap yang terpuji adalah...",
+                        options: [
+                            { text: "Marah dan keluar dari ruang kelas karena usulan tidak diterima.", correct: false },
+                            { text: "Menghargai hasil musyawarah dan melaksanakan keputusan bersama dengan ikhlas dan bertanggung jawab.", correct: true },
+                            { text: "Memaksa teman-teman agar mengubah keputusan sesuai kemauanmu.", correct: false }
+                        ],
+                        explanation: "Sila Ke-4 mengajarkan kita untuk mengutamakan musyawarah dan menerima hasil keputusan bersama dengan giat & penuh tanggung jawab."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Saat diskusi kelompok menentukan lokasi tujuan piknik sekolah, temanmu sedang menyampaikan pendapatnya. Tindakanmu adalah...",
+                        options: [
+                            { text: "Mendengarkan dengan tenang hingga selesai tanpa menyela pembicaranya.", correct: true },
+                            { text: "Memotong pembicaraannya dan menyuruhnya diam.", correct: false },
+                            { text: "Pura-pura tidak mendengar dan bermain HP sendiri.", correct: false }
+                        ],
+                        explanation: "Menghormati dan menghargai pendapat orang lain saat bermusyawarah merupakan ciri utama pengamalan Sila Ke-4."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Musyawarah mufakat di kelas tidak mencapai kesepakatan secara langsung. Cara demokratis yang sesuai Pancasila adalah...",
+                        options: [
+                            { text: "Memutus keputusannya lewat adu kekuatan atau perkelahian.", correct: false },
+                            { text: "Melakukan pemungutan suara (voting) secara adil dan terbuka.", correct: true },
+                            { text: "Bubar tanpa menyelesaikan masalah kelas.", correct: false }
+                        ],
+                        explanation: "Pengambilan keputusan melalui pemungutan suara (voting) yang jujur dan adil dilakukan jika mufakat belum tercapai."
+                    }
+                ]
+            },
+            5: {
+                sila: "Sila Ke-5",
+                title: "Pasar Keadilan",
+                icon: "🌾",
+                badgeName: "🌾 Lencana Padi & Kapas",
+                description: "Keadilan Sosial, Gotong Royong, Menghargai Hak Orang Lain, & Gaya Hidup Hemat",
+                questions: [
+                    {
+                        type: "scenario",
+                        situation: "Setiap hari Jumat diadakan piket kebersihan kelas. Sikap yang menunjukkan pengamalan Sila Ke-5 adalah...",
+                        options: [
+                            { text: "Melaksanakan tugas piket bersama-sama secara adil dan tidak menyuruh teman lain mengerjakan tugasmu.", correct: true },
+                            { text: "Kabur pulang duluan agar tidak perlu menyapu kelas.", correct: false },
+                            { text: "Menyuruh satu orang teman saja untuk membersihkan seluruh ruang kelas.", correct: false }
+                        ],
+                        explanation: "Gotong royong, bersikap adil dalam pembagian tugas, serta menghargai kerja keras teman sesuai dengan Sila Ke-5."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Kamu diberikan sisa uang saku harian oleh orang tuamu. Pengamalan sikap hemat yang sesuai Sila Ke-5 adalah...",
+                        options: [
+                            { text: "Menghabiskan semuanya untuk membeli mainan secara boros.", correct: false },
+                            { text: "Menyisihkan sebagian sisa uang saku untuk ditabung di celengan.", correct: true },
+                            { text: "Membeli barang mahal hanya untuk pamer kepada teman.", correct: false }
+                        ],
+                        explanation: "Sila Ke-5 memerintahkan kita untuk hidup hemat, tidak bergaya hidup mewah/boros, dan suka menabung."
+                    },
+                    {
+                        type: "scenario",
+                        situation: "Di kantin sekolah, terdapat antrean panjang untuk membeli makanan. Tindakan yang adil sesuai Sila Ke-5 adalah...",
+                        options: [
+                            { text: "Mengantre dengan tertib tanpa menyerobot antrean teman lain.", correct: true },
+                            { text: "Menyerobot ke barisan paling depan secara paksa.", correct: false },
+                            { text: "Menitip beli dengan menyogok teman di depan antrean.", correct: false }
+                        ],
+                        explanation: "Menghormati hak orang lain dan mematuhi aturan umum seperti mengantre secara tertib adalah wujud keadilan sosial."
+                    }
+                ]
+            }
+        };
+
+        // DOM Elements
+        const screenStart = document.getElementById('screen-start');
+        const screenMap = document.getElementById('screen-map');
+        const screenGameplay = document.getElementById('screen-gameplay');
+        const screenVictory = document.getElementById('screen-victory');
+        const screenCertificate = document.getElementById('screen-certificate');
+        const hudBar = document.getElementById('hud-bar');
+
+        function selectAvatar(emoji) {
+            gameState.avatar = emoji;
+            playSound('click');
+            document.querySelectorAll('.avatar-btn').forEach(btn => {
+                btn.classList.remove('border-amber-400', 'bg-amber-500/20');
+                if(btn.innerText.trim() === emoji) {
+                    btn.classList.add('border-amber-400', 'bg-amber-500/20');
+                }
+            });
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById('player-name-input').value.trim();
+            if (nameInput) gameState.playerName = nameInput;
+            
+            playSound('click');
+            
+            // Update HUD
+            document.getElementById('hud-avatar').innerText = gameState.avatar;
+            document.getElementById('hud-name').innerText = gameState.playerName;
+            document.getElementById('hud-score').innerText = gameState.score;
+            hudBar.classList.remove('hidden');
+            hudBar.classList.add('flex');
+
+            goMapScreen();
+        }
+
+        function goMapScreen() {
+            hideAllScreens();
+            screenMap.classList.remove('hidden');
+            screenMap.classList.add('flex');
+            updateMapButtons();
+        }
+
+        function confirmGoMap() {
+            playSound('click');
+            if (confirm("Kembali ke Peta Misi? Progres pertanyaan level ini akan diulang.")) {
+                goMapScreen();
+            }
+        }
+
+        function hideAllScreens() {
+            [screenStart, screenMap, screenGameplay, screenVictory, screenCertificate].forEach(s => {
+                s.classList.add('hidden');
+                s.classList.remove('flex');
+            });
+        }
+
+        function updateMapButtons() {
+            let allCompleted = true;
+            for (let i = 1; i <= 5; i++) {
+                const btn = document.getElementById(`zone-btn-${i}`);
+                const status = document.getElementById(`zone-status-${i}`);
+                const badgeHud = document.getElementById(`badge-s${i}`);
+
+                if (gameState.completedLevels[i - 1]) {
+                    btn.classList.remove('opacity-60', 'border-slate-700');
+                    btn.classList.add('border-green-500/80', 'bg-slate-800/90');
+                    status.className = 'absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-green-500/20 text-green-300 font-semibold';
+                    status.innerHTML = '<i class="fa-solid fa-check"></i> Selesai';
+
+                    badgeHud.classList.remove('opacity-30', 'grayscale');
+                } else if (i === 1 || gameState.completedLevels[i - 2]) {
+                    // Level is unlocked
+                    btn.classList.remove('opacity-60', 'border-slate-700');
+                    btn.classList.add('border-amber-500/80', 'bg-slate-800/90');
+                    status.className = 'absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 font-semibold';
+                    status.innerText = 'Siap';
+                    allCompleted = false;
+                } else {
+                    // Locked level
+                    btn.classList.add('opacity-60');
+                    status.className = 'absolute top-2 right-2 text-xs px-2 py-0.5 rounded-md bg-slate-700 text-slate-400 font-semibold';
+                    status.innerHTML = '<i class="fa-solid fa-lock"></i> Terkunci';
+                    allCompleted = false;
+                }
+            }
+
+            // Enable Certificate if all 5 completed
+            const certBtn = document.getElementById('btn-cert-map');
+            if (gameState.completedLevels.every(Boolean)) {
+                certBtn.disabled = false;
+                certBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                certBtn.classList.add('glow-gold', 'cursor-pointer');
+            }
+        }
+
+        function startLevel(levelNum) {
+            // Check if level is unlocked
+            if (levelNum > 1 && !gameState.completedLevels[levelNum - 2] && !gameState.completedLevels[levelNum - 1]) {
+                playSound('wrong');
+                alert("Selesaikan level sebelumnya terlebih dahulu!");
+                return;
+            }
+
+            playSound('click');
+            gameState.currentLevel = levelNum;
+            gameState.currentQuestionIdx = 0;
+
+            const lvlData = levelData[levelNum];
+            document.getElementById('level-badge-icon').innerText = lvlData.icon;
+            document.getElementById('level-sila-label').innerText = lvlData.sila;
+            document.getElementById('level-title').innerText = lvlData.title;
+
+            hideAllScreens();
+            screenGameplay.classList.remove('hidden');
+            screenGameplay.classList.add('flex');
+
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const lvlData = levelData[gameState.currentLevel];
+            const qData = lvlData.questions[gameState.currentQuestionIdx];
+
+            document.getElementById('question-index').innerText = gameState.currentQuestionIdx + 1;
+            document.getElementById('question-total').innerText = lvlData.questions.length;
+            document.getElementById('explanation-box').classList.add('hidden');
+
+            const container = document.getElementById('challenge-container');
+            container.innerHTML = '';
+
+            // Render Scenario Card
+            const card = document.createElement('div');
+            card.className = 'bg-slate-800/90 border border-slate-700/90 p-5 sm:p-6 rounded-2xl shadow-xl space-y-4';
+
+            card.innerHTML = `
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-amber-500/10 text-amber-400 text-xs font-bold uppercase">
+                    <i class="fa-solid fa-masks-theater"></i> Skenario Kehidupan Sehari-hari
+                </div>
+                <p class="text-base sm:text-lg font-medium text-slate-100 leading-relaxed">${qData.situation}</p>
+                <div class="space-y-2.5 pt-2" id="options-holder"></div>
+            `;
+
+            container.appendChild(card);
+
+            const optionsHolder = card.querySelector('#options-holder');
+            qData.options.forEach((opt, idx) => {
+                const optBtn = document.createElement('button');
+                optBtn.className = 'btn-bounce w-full text-left p-4 rounded-xl bg-slate-900/80 border border-slate-700 hover:border-amber-400/70 text-slate-200 text-xs sm:text-sm font-medium transition flex items-start gap-3 group';
+                optBtn.innerHTML = `
+                    <span class="w-6 h-6 rounded-full bg-slate-800 border border-slate-600 group-hover:border-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 font-bold text-xs flex items-center justify-center shrink-0 transition">
+                        ${String.fromCharCode(65 + idx)}
+                    </span>
+                    <span class="pt-0.5">${opt.text}</span>
+                `;
+                optBtn.onclick = () => handleAnswer(opt, optBtn, qData);
+                optionsHolder.appendChild(optBtn);
+            });
+        }
+
+        function handleAnswer(selectedOpt, btnElement, qData) {
+            const allBtns = document.querySelectorAll('#options-holder button');
+            allBtns.forEach(b => b.disabled = true);
+
+            const explanationBox = document.getElementById('explanation-box');
+            const expTitle = document.getElementById('explanation-title');
+            const expText = document.getElementById('explanation-text');
+            const expIcon = document.getElementById('explanation-icon');
+
+            if (selectedOpt.correct) {
+                playSound('correct');
+                btnElement.classList.remove('bg-slate-900/80', 'border-slate-700');
+                btnElement.classList.add('bg-green-950/80', 'border-green-500', 'text-green-200');
+                
+                gameState.score += 20;
+                document.getElementById('hud-score').innerText = gameState.score;
+
+                expIcon.innerText = '✅';
+                expTitle.innerText = 'Sikap Kamu Tepat!';
+                expTitle.className = 'font-bold text-green-400 text-sm sm:text-base';
+            } else {
+                playSound('wrong');
+                btnElement.classList.remove('bg-slate-900/80', 'border-slate-700');
+                btnElement.classList.add('bg-red-950/80', 'border-red-500', 'text-red-200');
+
+                expIcon.innerText = '⚠️';
+                expTitle.innerText = 'Sikap Kurang Sesuai';
+                expTitle.className = 'font-bold text-amber-400 text-sm sm:text-base';
+            }
+
+            expText.innerText = qData.explanation;
+            explanationBox.classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            playSound('click');
+            const lvlData = levelData[gameState.currentLevel];
+            gameState.currentQuestionIdx++;
+
+            if (gameState.currentQuestionIdx < lvlData.questions.length) {
+                renderQuestion();
+            } else {
+                // Completed level
+                finishLevel();
+            }
+        }
+
+        function finishLevel() {
+            playSound('victory');
+            gameState.completedLevels[gameState.currentLevel - 1] = true;
+            
+            const lvlData = levelData[gameState.currentLevel];
+            document.getElementById('victory-subtitle').innerText = `Selamat! Kamu telah menyelesaikan Misi ${lvlData.title}!`;
+            document.getElementById('victory-badge-name').innerText = lvlData.badgeName;
+            document.getElementById('victory-added-score').innerText = `+${lvlData.questions.length * 20} Poin`;
+            document.getElementById('victory-total-score').innerText = gameState.score;
+
+            hideAllScreens();
+            screenVictory.classList.remove('hidden');
+            screenVictory.classList.add('flex');
+            updateMapButtons();
+        }
+
+        function showFinalCertificate() {
+            playSound('victory');
+            document.getElementById('cert-player-name').innerText = gameState.playerName;
+            document.getElementById('cert-score').innerText = `${gameState.score} Poin`;
+
+            let titleStr = "KESATRIA PANCASILA UTAMA";
+            if (gameState.score < 250) titleStr = "KESATRIA PANCASILA MUDA";
+            else if (gameState.score < 300) titleStr = "KESATRIA PANCASILA UNGGUL";
+
+            document.getElementById('cert-title').innerText = titleStr;
+
+            hideAllScreens();
+            screenCertificate.classList.remove('hidden');
+            screenCertificate.classList.add('flex');
+        }
+
+        function resetGame() {
+            playSound('click');
+            gameState.score = 0;
+            gameState.currentLevel = 1;
+            gameState.currentQuestionIdx = 0;
+            gameState.completedLevels = [false, false, false, false, false];
+            
+            document.getElementById('hud-score').innerText = 0;
+            
+            for (let i = 1; i <= 5; i++) {
+                const badgeHud = document.getElementById(`badge-s${i}`);
+                badgeHud.classList.add('opacity-30', 'grayscale');
+            }
+
+            hideAllScreens();
+            screenStart.classList.remove('hidden');
+            screenStart.classList.add('flex');
+            hudBar.classList.add('hidden');
+            hudBar.classList.remove('flex');
+        }
+
+        // Initialize state on load
+        window.onload = function() {
+            console.log("Pancasila Quest Game Loaded Successfully!");
+        };
+    </script>
+</body>
+</html>
